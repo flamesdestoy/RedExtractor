@@ -1,5 +1,5 @@
 from typing import Any
-from src.utils.logger import logger
+from logger import logger
 
 def download_media(url: str,
     extractor_settings: dict[str, Any],
