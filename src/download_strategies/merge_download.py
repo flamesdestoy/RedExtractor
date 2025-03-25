@@ -21,6 +21,6 @@ class MergingDownload(DownloadingStrategy):
                 video_format=media_object.format_id,
                 audio_format="bestaudio[ext=m4a]"
             )
-            logger.info(f"Download {'succeeded' if result else 'failed'}")
+            logger.info(f" * {f"Successfully downloaded to {result}" if result else "Download failed"}")
 
         asyncio.run(download())
