@@ -3,115 +3,161 @@ import os
 import re
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
-from typing import Optional
+from typing import Optional, Tuple
 import yt_dlp
+import uuid
 
-from src.utils.download_helper import download_media
+from download_helper import download_media
+from logger import logger
 
+
+def sanitize_filename(filename: str) -> str:
+    """Remove invalid filename characters while preserving Unicode"""
+    return re.sub(r'[<>:"/\\|?*\x00-\x1f]', '', filename).strip()
 
 async def download_media_separately(
     url: str,
     output_dir: str = "downloads",
-    video_format: str = "bestvideo",
-    audio_format: str = "bestaudio",
-    max_workers: int = 4,
-    title_length: int = 50
+    video_format: str = "bestvideo[height<=1080][ext=mp4]",
+    audio_format: str = "bestaudio[ext=m4a]",
+    max_workers: int = 2
 ) -> Optional[str]:
     """
-    Downloads video and audio streams in parallel, merges them via FFmpeg piping.
-    
-    Args:
-        url: Video URL
-        output_dir: Output directory (default: "downloads")
-        video_format: Video stream selector (default: "bestvideo")
-        audio_format: Audio stream selector (default: "bestaudio")
-        max_workers: Thread pool size (default: 4)
-        title_length: Max characters for filename (default: 50)
+    Downloads and merges media with session-based temp files.
     
     Returns:
-        Path to merged file or None if failed
+        Path to merged file if successful, None otherwise
     """
-    
-    # Get video metadata first
-    with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
-        info = ydl.extract_info(url, download=False)
-        title = sanitize_filename(info['title'])[:title_length]
-        output_template = f"{output_dir}/{title}.%(ext)s"
-
-    # Prepare parallel downloads
-    loop = asyncio.get_event_loop()
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # Download both streams simultaneously
-        video_future = loop.run_in_executor(
-            executor, 
-            partial_download,
-            url, 
-            video_format,
-            f"{output_template % {'ext': 'mp4'}}"
-        )
-        audio_future = loop.run_in_executor(
-            executor,
-            partial_download,
-            url,
-            audio_format,
-            f"{output_template % {'ext': 'm4a'}}"
-        )
-
-        video_path, audio_path = await asyncio.gather(video_future, audio_future)
-
-    # Merge streams with FFmpeg piping (no temp files)
-    output_path = f"{output_dir}/{title}.mp4"
-    merge_success = merge_with_ffmpeg_pipe(video_path, audio_path, output_path)
-    
-    # Cleanup partial files
-    for path in (video_path, audio_path):
-        if path and os.path.exists(path):
-            os.unlink(path)
-
-    return output_path if merge_success else None
-
-
-def partial_download(url: str, format_spec: str, output_path: str) -> Optional[str]:
-    """Download single stream (video or audio)"""
-    ydl_opts = {
-        'format': format_spec,
-        'outtmpl': output_path,
-        'quiet': True,
-        'no_warnings': True,
-    }
-
-    download_media(url, ydl_opts)
-        
-
-def merge_with_ffmpeg_pipe(
-    video_path: str,
-    audio_path: str,
-    output_path: str
-) -> bool:
-    """Merge streams using FFmpeg pipes for zero-copy efficiency"""
     try:
-        ffmpeg_cmd = [
+        # Ensure output directory exists
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Get video metadata
+        with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+            info = ydl.extract_info(url, download=False)
+            title = sanitize_filename(info['title'])
+            session_id = uuid.uuid4().hex[:8]  # 8-character unique ID
+            
+        # Prepare paths
+        final_path = os.path.join(output_dir, f"{title}.mp4")
+        video_temp = os.path.join(output_dir, f"video_{session_id}.mp4")
+        audio_temp = os.path.join(output_dir, f"audio_{session_id}.m4a")
+        
+        # Download both streams in parallel
+        loop = asyncio.get_event_loop()
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            download_tasks = [
+                loop.run_in_executor(
+                    executor,
+                    lambda: download_stream(url, video_format, video_temp)
+                ),
+                loop.run_in_executor(
+                    executor,
+                    lambda: download_stream(url, audio_format, audio_temp)
+                )
+            ]
+            
+            results = await asyncio.gather(*download_tasks)
+            
+            # Check if both downloads succeeded
+            if None in results:
+                logger.error("One or both downloads failed")
+                return None
+
+        # Merge streams
+        if not merge_streams(video_temp, audio_temp, final_path):
+            return None
+            
+        # Cleanup
+        for path in (video_temp, audio_temp):
+            try:
+                if path and os.path.exists(path):
+                    os.remove(path)
+            except Exception as e:
+                logger.warning(f"Couldn't delete temp file {path}: {e}")
+        
+        return final_path
+        
+    except Exception as e:
+        logger.error(f"Download process failed: {str(e)}")
+        return None
+
+def download_stream(url: str, format_spec: str, output_path: str) -> Optional[str]:
+    """Downloads a single stream with validation"""
+    try:
+        ydl_opts = {
+            'format': format_spec,
+            'outtmpl': output_path,
+            'quiet': True,
+            'no_warnings': True,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+        
+        # Verify download completed successfully
+        if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+            return output_path
+        return None
+    except Exception as e:
+        logger.error(f"Download failed for {format_spec}: {str(e)}")
+        return None
+
+def merge_streams(video_path: str, audio_path: str, output_path: str) -> bool:
+    """Merges video and audio streams safely"""
+    try:
+        # Verify both files exist
+        if not all(os.path.exists(p) for p in (video_path, audio_path)):
+            missing = [p for p in (video_path, audio_path) if not os.path.exists(p)]
+            logger.error(f"Missing files for merging: {missing}")
+            return False
+
+        # FFmpeg command (no re-encoding)
+        cmd = [
             'ffmpeg',
-            '-y',  # Overwrite without asking
-            '-i', 'pipe:0',  # Video from stdin
-            '-i', 'pipe:1',  # Audio from stdin
-            '-c:v', 'copy',  # Stream copy (no re-encode)
-            '-c:a', 'copy',  # Stream copy (no re-encode)
+            '-y',                    # Overwrite output
+            '-i', video_path,        # Video input
+            '-i', audio_path,        # Audio input
+            '-c:v', 'copy',         # Copy video stream
+            '-c:a', 'copy',         # Copy audio stream
             '-movflags', 'faststart',  # Enable streaming
             output_path
         ]
         
-        with subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE) as proc:
-            # Pipe video and audio simultaneously
-            with open(video_path, 'rb') as vfile, open(audio_path, 'rb') as afile:
-                proc.communicate(input=vfile.read() + afile.read())
+        # Run FFmpeg
+        subprocess.run(
+            cmd,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        # Verify output
+        if not os.path.exists(output_path):
+            logger.error("FFmpeg completed but no output file created")
+            return False
+            
         return True
+        
+    except subprocess.CalledProcessError as e:
+        logger.error(f"FFmpeg merge failed: {e.stderr.strip()}")
+        return False
     except Exception as e:
-        print(f"Merge failed: {e}")
+        logger.error(f"Unexpected merge error: {str(e)}")
         return False
 
+async def main():
+    result = await download_media_separately(
+        "https://www.youtube.com/watch?v=NetWLuintZ0",
+        output_dir="C:/Users/flame/Videos/Captures/New folder",
+        video_format="bestvideo[height<=1080][ext=mp4]",
+        audio_format="bestaudio[ext=m4a]"
+    )
+    
+    if result:
+        logger.info(f"Successfully downloaded to: {result}")
+    else:
+        logger.error("Download failed")
 
-def sanitize_filename(filename: str) -> str:
-    """Remove invalid filename characters"""
-    return re.sub(r'[<>:"/\\|?*\x00-\x1f]', '', filename).strip()
-
+if __name__ == "__main__":
+    asyncio.run(main())
