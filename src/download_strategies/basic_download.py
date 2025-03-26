@@ -29,7 +29,8 @@ class SimpleDownload(DownloadingStrategy):
         # Define the parameter for yt-dlp
         
         # Save with title and extension
-        self.strategy_settings["outtmpl"] = f"{output_path}/%(title)s.%(ext)s"
+        outtmpl = f"{output_path}/{media_object.output_name or '%(title)s'}.%(ext)s"
+        self.strategy_settings["outtmpl"] = outtmpl
         
         # Set throttling rate (1 megabit per second)
         self.strategy_settings["throttled_rate"] = throttle_rate
