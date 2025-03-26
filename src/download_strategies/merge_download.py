@@ -16,8 +16,7 @@ class MergingDownload(DownloadingStrategy):
         # Async entry point
         async def download():
             result = await download_media_separately(
-                media_object.url,
-                media_object.output_path,
+                media_object,
                 video_format=media_object.format_id,
                 audio_format="bestaudio[ext=m4a]"
             )

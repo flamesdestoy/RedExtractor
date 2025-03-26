@@ -1,6 +1,9 @@
+import os
+
 from .downloading_strategy import DownloadingStrategy
 from utils.media_object_class import MediaObject
 from utils.download_helper import download_media
+from utils.logger import logger
 
 class MP3Download(DownloadingStrategy):
 
@@ -10,11 +13,17 @@ class MP3Download(DownloadingStrategy):
         # setting up the downloading parameters
         self.strategy_settings = {
             "postprocessors": [{
-                "key": "FFmpegExtractAudio",  # Extract audio
-                "preferredcodec": "mp3",       # Convert to MP3
-                "preferredquality": "192",     # Bitrate (192kbps)
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "192",
             }],
-            "quiet": True,  # Suppress non-error logs
+            "quiet": True,
+            "no_warnings": False,  # Important to see warnings
+            "extract_flat": False,  # Changed from True to properly process audio
+            "force_generic_extractor": False,  # Let yt-dlp choose best extractor
+            "ignoreerrors": True,  # Better than ignore_no_formats_error
+            "socket_timeout": 30,
+            "retries": 3,
         }
     
     def __str__(self) -> None:
@@ -22,10 +31,18 @@ class MP3Download(DownloadingStrategy):
     
     def download(self, media_object: MediaObject):
 
+
         # Prioritize specified format/ Output template
-        self.strategy_settings["format"] = f"{media_object.format_id}/bestaudio/best"
-        self.strategy_settings["outtmpl"] = f"{media_object.output_path}/%(title)s.%(ext)s"
+        self.strategy_settings["format"] = f"bestaudio/bestaudio/best"
+        outtmpl = f"{media_object.output_path}/{media_object.output_name or "%(title)s"}.%(ext)s"
+        self.strategy_settings["outtmpl"] = outtmpl
         
-        # Download the mp3 file
-        download_media(media_object.url, self.strategy_settings)
-        
+        # Additional fixes for problematic videos
+        if media_object.url.startswith(('https://youtube.com', 'https://www.youtube.com')):
+            self.strategy_settings.update({
+                'extract_flat': 'in_playlist',  # Special handling for YouTube
+                'compat_opts': ['no-youtube-unavailable-videos'],
+            })
+
+        # Perform download
+        result = download_media(media_object.url, self.strategy_settings)
