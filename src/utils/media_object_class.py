@@ -12,7 +12,6 @@ class MediaObject:
         output_name (str): The file final name/title.
         format_id (str): The media file copy/variation.
         file_format (str): The format of the file to be downloaded (e.g., 'mp4', 'mp3').
-        timeout (int): The timeout period (in seconds) for the download operation.
         Chunk_size (int): The maximum size (in bytes) for each chunk of the download.
     """
 
@@ -20,9 +19,8 @@ class MediaObject:
     __title: str
     __output_path: str
     __output_name: str
-    __format_id: str
     __file_format: str
-    __timeout: int
+    __format_id: str = "bestvideo[height<=1080][ext=mp4]"  # Best format by default
     __CHUNK_SIZE: int = 1024 * 1024  # 1 MB per chunk
 
     @property
@@ -131,7 +129,7 @@ class MediaObject:
         Gets the format of the file to be downloaded.
         
         Returns:
-            str: The file format (e.g., 'mp4', 'mp3').
+            str: The file format (e.g., 'mp4', 'mp3', 'WEBM', 'AAC').
         """
         return self.__file_format
 
@@ -141,29 +139,9 @@ class MediaObject:
         Sets the format of the file to be downloaded.
         
         Args:
-            value (str): The new file format (e.g., 'mp4', 'mp3').
+            value (str): The new file format (e.g., 'mp4', 'mp3', 'WEBM', 'AAC').
         """
         self.__file_format = value
-
-    @property
-    def timeout(self) -> int:
-        """
-        Gets the timeout period for the download operation.
-        
-        Returns:
-            int: The timeout period in seconds.
-        """
-        return self.__timeout
-
-    @timeout.setter
-    def timeout(self, value: int) -> None:
-        """
-        Sets the timeout period for the download operation.
-        
-        Args:
-            value (int): The new timeout period in seconds.
-        """
-        self.__timeout = value
 
     @property
     def CHUNK_SIZE(self) -> int:
