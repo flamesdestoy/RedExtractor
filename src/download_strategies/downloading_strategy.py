@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from src.utils.media_object_class import MediaObject
+from utils.media_object_class import MediaObject
 
 class DownloadingStrategy(ABC):
     """
@@ -23,12 +23,6 @@ class DownloadingStrategy(ABC):
         Abstract method that must be implemented by any subclass. 
         Defines how the downloading should be performed for each strategy.
     """
-
-    @property
-    @abstractmethod
-    def timeout(self) -> int:
-        """The maximum duration (in seconds) before a download is aborted."""
-        return 30  # Default value (can be overridden)
 
     @abstractmethod
     def download(self, video: MediaObject):

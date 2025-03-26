@@ -1,9 +1,9 @@
 import asyncio
 
 from .downloading_strategy import DownloadingStrategy
-from src.utils.media_object_class import MediaObject
-from src.utils.merge_download_helper import download_media_separately
-from src.utils.logger import logger
+from utils.media_object_class import MediaObject
+from utils.merge_download_helper import download_media_separately
+from utils.logger import logger
 
 
 class MergingDownload(DownloadingStrategy):

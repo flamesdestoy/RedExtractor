@@ -7,8 +7,8 @@ from typing import Optional, Tuple
 import yt_dlp
 import uuid
 
-from download_helper import download_media
-from logger import logger
+# from download_helper import download_media
+from .logger import logger
 
 
 def sanitize_filename(filename: str) -> str:
