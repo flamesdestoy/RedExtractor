@@ -145,19 +145,4 @@ def merge_streams(video_path: str, audio_path: str, output_path: str) -> bool:
     except Exception as e:
         logger.error(f"Unexpected merge error: {str(e)}")
         return False
-
-async def main():
-    result = await download_media_separately(
-        "https://www.youtube.com/watch?v=NetWLuintZ0",
-        output_dir="C:/Users/flame/Videos/Captures/New folder",
-        video_format="bestvideo[height<=1080][ext=mp4]",
-        audio_format="bestaudio[ext=m4a]"
-    )
     
-    if result:
-        logger.info(f"Successfully downloaded to: {result}")
-    else:
-        logger.error("Download failed")
-
-if __name__ == "__main__":
-    asyncio.run(main())
