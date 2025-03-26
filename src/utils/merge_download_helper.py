@@ -7,8 +7,9 @@ from typing import Optional, Tuple
 import yt_dlp
 import uuid
 
-from download_helper import download_media
-from logger import logger
+# from download_helper import download_media
+from .logger import logger
+from .media_object_class import MediaObject
 
 
 def sanitize_filename(filename: str) -> str:
@@ -16,8 +17,7 @@ def sanitize_filename(filename: str) -> str:
     return re.sub(r'[<>:"/\\|?*\x00-\x1f]', '', filename).strip()
 
 async def download_media_separately(
-    url: str,
-    output_dir: str = "downloads",
+    media_obj: MediaObject,
     video_format: str = "bestvideo[height<=1080][ext=mp4]",
     audio_format: str = "bestaudio[ext=m4a]",
     max_workers: int = 2
@@ -28,6 +28,9 @@ async def download_media_separately(
     Returns:
         Path to merged file if successful, None otherwise
     """
+
+    url = media_obj.url
+    output_dir = media_obj.output_path
     try:
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
@@ -39,7 +42,8 @@ async def download_media_separately(
             session_id = uuid.uuid4().hex[:8]  # 8-character unique ID
             
         # Prepare paths
-        final_path = os.path.join(output_dir, f"{title}.mp4")
+        file_name = title if not media_obj.output_name else media_obj.output_name
+        final_path = os.path.join(output_dir, f"{file_name}.{media_obj.file_format}")
         video_temp = os.path.join(output_dir, f"video_{session_id}.mp4")
         audio_temp = os.path.join(output_dir, f"audio_{session_id}.m4a")
         

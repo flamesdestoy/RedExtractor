@@ -1,6 +1,6 @@
 from .downloading_strategy import DownloadingStrategy
-from src.utils.media_object_class import MediaObject
-from src.utils.download_helper import download_media
+from utils.media_object_class import MediaObject
+from utils.download_helper import download_media
 
 class SimpleDownload(DownloadingStrategy):
 
@@ -29,7 +29,8 @@ class SimpleDownload(DownloadingStrategy):
         # Define the parameter for yt-dlp
         
         # Save with title and extension
-        self.strategy_settings["outtmpl"] = f"{output_path}/%(title)s.%(ext)s"
+        outtmpl = f"{output_path}/{media_object.output_name or '%(title)s'}.%(ext)s"
+        self.strategy_settings["outtmpl"] = outtmpl
         
         # Set throttling rate (1 megabit per second)
         self.strategy_settings["throttled_rate"] = throttle_rate
