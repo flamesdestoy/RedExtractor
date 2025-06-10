@@ -1,9 +1,6 @@
-import os
-
 from .downloading_strategy import DownloadingStrategy
 from utils.media_object_class import MediaObject
 from utils.download_helper import download_media
-from utils.logger import logger
 
 class MP3Download(DownloadingStrategy):
 
@@ -41,4 +38,4 @@ class MP3Download(DownloadingStrategy):
             })
 
         # Perform download
-        result = download_media(media_object.url, self.download_settings)
+        download_media(media_object.url, self.download_settings)

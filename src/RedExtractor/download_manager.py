@@ -2,9 +2,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional, Dict, Callable
 from queue import Queue, Empty
-import threading
 import time
-import json
 
 from download_strategies.downloading_strategy import DownloadingStrategy
 from utils.media_object_class import MediaObject

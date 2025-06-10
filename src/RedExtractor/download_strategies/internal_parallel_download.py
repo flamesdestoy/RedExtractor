@@ -21,11 +21,8 @@ class ParallelDownload(DownloadingStrategy):
         return "YTD Lp simple download strategy."
     
     def download(self, media_object: MediaObject, progress_callback=None):
-        url = media_object.url
-        output_path = media_object.output_path
 
-        # output file path
-        outtmpl = f"{output_path}/{media_object.output_name or media_object.title}.%(ext)s"
+        outtmpl = f"{media_object.output_path}/{media_object.output_name or media_object.title}.%(ext)s"
         file_ext = media_object.file_format
         max_concurrent_frags = 3
         
@@ -34,11 +31,11 @@ class ParallelDownload(DownloadingStrategy):
             "progress_hooks": [progress_callback] if progress_callback else [],
             "format": media_object.format_id,
             "outtmpl": outtmpl,
-            "merge_output_format": file_ext,                  # Threads per file (for ffmpeg fragment merging)
-            # "external_downloader": "aria2c",    # Optional: Use aria2c for better performance
+            "merge_output_format": file_ext,  # Threads per file (for ffmpeg fragment merging)
+            # "external_downloader": "aria2c",  # Optional: Use aria2c for better performance
             "concurrent_fragment_downloads": max_concurrent_frags,  # Reduced from 5
             "n_threads": 2,  # Reduced threads for merging
         })
 
         # Download the video using yt-dlp
-        download_media(url, self.download_settings)
+        download_media(media_object.url, self.download_settings)

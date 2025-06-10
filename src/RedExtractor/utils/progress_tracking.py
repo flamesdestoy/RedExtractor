@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from time import time, sleep
+from time import time
 from typing import Callable
 from pulsebus import (
     MessageTemplate,
@@ -82,20 +82,6 @@ class DownloadProgressTracker:
         """Return the current download status."""
         # A Consumer which gets notified and pulls the message from the queue Displays it 
         # Have the message released to the pool back again
-        # from rich.console import Console
-        # from rich.table import Table
-
-        # console = Console()
-        # table = Table(title="Download Progress")
-
-        # table.add_column("Filename", style="cyan")
-        # table.add_column("Progress", style="green")
-        # table.add_column("Speed", style="magenta")
-        # table.add_column("ETA", style="yellow")
-
-        # table.add_row(msg.get_property("file_name"), msg.get_property("progress"), msg.get_property("download_speed"), msg.get_property("ETA"))
-        # console.clear()
-        # console.print(table)
         media_status = msg.to_dict()        
         self.consumer_logic_callable(media_status)
         self.status[msg.get_property("url")] = media_status

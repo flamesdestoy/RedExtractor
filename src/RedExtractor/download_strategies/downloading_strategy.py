@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Callable
 from utils.media_object_class import MediaObject
 
 class DownloadingStrategy(ABC):
