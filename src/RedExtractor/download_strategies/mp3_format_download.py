@@ -1,6 +1,6 @@
 from .downloading_strategy import DownloadingStrategy
 from core.media_object_class import MediaObject
-from utils.download_helper import download_media
+from core.download_helper import download_media
 
 class MP3Download(DownloadingStrategy):
     """
