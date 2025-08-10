@@ -1,7 +1,17 @@
-from .download_manager import DownloadManager
-from .download_strategies import (
+from event_driven_downloader.download_manager import DownloadManager
+from progress_tracking.progress_tracking import DownloadMonitor
+from core.media_object_class import MediaObject
+from download_strategies import (
     ParallelDownload,
     SimpleDownload,
     MP3Download
 )
-from .utils import *
+
+__all__ = [
+    "DownloadManager",
+    "DownloadMonitor",
+    "MediaObject",
+    "ParallelDownload",
+    "SimpleDownload",
+    "MP3Download"
+]
