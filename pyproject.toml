@@ -4,15 +4,20 @@ build-backend = "hatchling.build"
 
 [project]
 name = "RedExtractor"
-version = "0.1.2"
-description = "A flexible and fast media downloading system."
+version = "0.2.0"
+description = "A flexible and fast multi-platform media downloading system."
 authors = [
-  { name="Your Name", email="you@example.com" }
+  { name="Flames Destroy", email="flamesdestroy913@gmail.com" }
 ]
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.8"
-dependencies = []
+dependencies = [
+  "pulsebus",
+  "yt-dlp",
+  "requests",
+  "tqdm"
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/RedExtractor"]

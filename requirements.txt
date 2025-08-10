@@ -1,4 +1,5 @@
 yt-dlp
+pulsbus
 ffmpeg-python
 requests
 tqdm

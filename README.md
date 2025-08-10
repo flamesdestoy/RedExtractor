@@ -1,5 +1,16 @@
 # RedExtractor
-RedExtractor is the go to choice for YouTube video Downloading, flexible Python framework for downloading videos and audio streams using [yt-dlp]. It supports multiple download strategies, including basic single-stream downloads, parallel downloads, MP3 extraction, and real-time progress tracking.
+is a Python library designed for fast, flexible, and reliable downloading of media content—primarily videos and audio streams—from YouTube and similar platforms (Facebook, Instagram). Leveraging the power of [yt-dlp] and modular design patterns, RedExtractor enables developers to easily integrate advanced media downloading capabilities into their applications.
+
+The library supports multiple download strategies, including single-stream, parallel segmented downloads, and MP3 extraction. It provides real-time progress tracking, customizable format selection, and concurrent downloads using threads or processes. RedExtractor is built to be extensible, allowing for future download strategies easily integrated.
+
+Whether you need to download a single video, playlist, batch process multiple streams, or extract audio, RedExtractor offers a user-friendly API and robust architecture to meet your needs. It is cross-platform, working seamlessly on Windows, macOS, and Linux.
+
+**Typical Use Cases:**
+- Downloading YouTube videos or audio for offline use
+- Scripted downloading playlists or channels
+- Extracting MP3 audio from video sources
+- Integrating media download functionality into larger Python projects
+- Tracking download progress in real-time for user feedback
 
 ---
 
@@ -8,27 +19,28 @@ RedExtractor is the go to choice for YouTube video Downloading, flexible Python 
 - **Multiple Download Strategies**  
   Choose the best download approach for your needs:  
   - Basic single-stream download  
-  - Parallel download with segmented streams  
+  - Parallel download with segmented streams (Faster with m3u8 & dash files) 
   - MP3 audio-only download  
 
 - **Progress Tracking**  
-  Real-time download progress updates via callbacks or event hooks.
+  Real-time download progress updates via ytdlp callbacks and hook.
 
 - **Format Selection & Customization**  
   Easily select video/audio formats or quality preferences.
-
-- **Concurrent Downloads**  
-  Download multiple videos concurrently with thread or process-based parallelism.
 
 - **Extensible & Modular**  
   Designed with strategy patterns for easy addition of new download methods.
 
 - **User-friendly**
-  Simple, decent API to use fluently and choose downloading strategies, designed to be the best.
+  Simple, decent API to use fluently and choose downloading strategies, customizable client defined download progress displaying, designed to be the best.
 
 - **Cross-platform Support**  
   Works on Windows, macOS, and Linux systems.
 
+
+- **Shallow Concurrent file downloading support**
+  Easily configure the download system to support numbered downloads. 
+  (Not Fully Achieved, Error prone)
 
 ---
 
@@ -37,9 +49,9 @@ Python 3.12.1
 
 ytd-lp (for YouTube downloads)
 
-FFmpeg (for processing media files)
+PulseBus (Event-Driven Infrastructure)
 
-PulseBus (for instantaneous progress tracking)
+tqdm (for default terminal progress display)
 
 unittest (for testing)
 
