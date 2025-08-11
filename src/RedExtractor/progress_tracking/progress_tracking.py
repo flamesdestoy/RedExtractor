@@ -12,7 +12,7 @@ from pulsebus import (
     MessagePool
 )
 
-from utils.logger import logger
+from ..utils.logger import logger
 
 
 class DownloadingState(Enum):

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from core.media_object_class import MediaObject
+from ..core.media_object_class import MediaObject
 
 class DownloadingStrategy(ABC):
     """

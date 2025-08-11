@@ -1,6 +1,6 @@
 from collections import deque
 
-from core.media_object_class import MediaObject
+from ..core.media_object_class import MediaObject
 
 class MediaFilesBank:
     """

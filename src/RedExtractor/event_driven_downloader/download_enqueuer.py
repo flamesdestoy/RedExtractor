@@ -1,7 +1,7 @@
 from pulsebus import BaseProducer, MessagePool
-from utils.logger import logger
-from utils.media_files_bank import MediaFilesBank
-from progress_tracking.progress_tracking import DownloadingState
+from ..utils.logger import logger
+from ..utils.media_files_bank import MediaFilesBank
+from ..progress_tracking.progress_tracking import DownloadingState
 
 from time import time
 

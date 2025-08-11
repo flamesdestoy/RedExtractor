@@ -1,13 +1,13 @@
 from pulsebus import EventSystem, MessageBuilder, MessagePool
 
-from download_strategies.downloading_strategy import DownloadingStrategy
+from ..download_strategies.downloading_strategy import DownloadingStrategy
 from .download_enqueuer import DownloadEnqueuer
 from .download_worker import DownloadWorker
 
-from core.media_object_class import MediaObject
-from progress_tracking.progress_tracking import DownloadProgressTracker
-from utils.media_files_bank import MediaFilesBank
-from utils.logger import logger
+from ..core.media_object_class import MediaObject
+from ..progress_tracking.progress_tracking import DownloadProgressTracker
+from ..utils.media_files_bank import MediaFilesBank
+from ..utils.logger import logger
 
 from typing import Optional, Callable
 from time import sleep

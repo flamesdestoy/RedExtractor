@@ -1,7 +1,7 @@
 from pulsebus import MessagePool, MessageTemplate, BaseConsumer
 
-from progress_tracking.progress_tracking import DownloadingState, progress_hook
-from utils.logger import logger
+from ..progress_tracking.progress_tracking import DownloadingState, progress_hook
+from ..utils.logger import logger
 
 class DownloadWorker(BaseConsumer):
     """
